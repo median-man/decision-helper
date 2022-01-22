@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 // UI Components
 import Badge from "react-bootstrap/Badge";
@@ -13,7 +13,7 @@ import Col from "react-bootstrap/Col";
 
 
 // - TODO: implement Row, Col, Container components
-// - TODO: give the name input focus after adding a pick
+// - TODO: press ctrl + enter anywhere on doc submits form
 // - IDEA: show tooltip or overlay next to number pick input if user tries
 //   typing a number out of range
 
@@ -23,6 +23,7 @@ const MAX_RAND_NUM = 1000;
 function App() {
   const [picks, setPicks] = useState([]);
   const [newPick, setNewPick] = useState({ name: "", number: "" });
+  const pickNameInputRef = useRef();
 
   const handleNewPickChange = (event) => {
     const { name, value } = event.target;
@@ -54,6 +55,7 @@ function App() {
     }
     setPicks((prevState) => [...prevState, newPick]);
     setNewPick({ name: "", number: "" });
+    pickNameInputRef.current.focus();
   };
 
   const handleAddPickKeyDown = (event) => {
@@ -100,6 +102,7 @@ function App() {
               {/* Inputs for adding picks to the list */}
               <InputGroup className="mb-3" onKeyDown={handleAddPickKeyDown}>
                 <FormControl
+                  ref={pickNameInputRef}
                   name="name"
                   aria-label="name"
                   aria-describedby="add-pick"

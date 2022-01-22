@@ -11,27 +11,31 @@ import ListGroup from "react-bootstrap/ListGroup";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
-// TODO: implement Row, Col, Container components
-// TODO: pressing enter while adding picks should add the pick not submit the form
-// TODO: give the name input focus after adding a pick
-// TODO: arrow keys should set max number
-// TODO: debounced number keys should set max number
-// TODO: pressing ctrl+enter should submit the form regardless of which element has focus
+
+// - TODO: implement Row, Col, Container components
+// - TODO: give the name input focus after adding a pick
+// - IDEA: show tooltip or overlay next to number pick input if user tries
+//   typing a number out of range
+
+// Largest allowable number
+const MAX_RAND_NUM = 1000;
 
 function App() {
-  const [maxNum, setMaxNum] = useState(20);
   const [picks, setPicks] = useState([]);
   const [newPick, setNewPick] = useState({ name: "", number: "" });
 
   const handleNewPickChange = (event) => {
     const { name, value } = event.target;
+    if ((name === "number" && value < 1) || value > MAX_RAND_NUM) {
+      return;
+    }
     setNewPick((prev) => ({ ...prev, [name]: value }));
   };
 
   const isInputInvalid =
-    !newPick.name || newPick.number < 1 || newPick.number > maxNum;
+    !newPick.name || newPick.number < 1 || newPick.number > MAX_RAND_NUM;
 
-  const handleAddPick = () => {
+  const addPick = () => {
     const { name, number } = newPick;
     if (isInputInvalid) {
       // incomplete input
@@ -52,6 +56,20 @@ function App() {
     setNewPick({ name: "", number: "" });
   };
 
+  const handleAddPickKeyDown = (event) => {
+    // Do nothing if key is not Enter
+    if (event.code !== "Enter") {
+      return;
+    }
+
+    // Prevent bubbling and submit event on form
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Add pick to list
+    addPick();
+  };
+
   return (
     <Container>
       <header className="px-4 pt-5 text-center">
@@ -60,22 +78,27 @@ function App() {
       <div className="row">
         <div className="col-md-8 pt-5">
           {/* Decider Inputs */}
-          <form>
-            <h2>Randomizer Parameters</h2>
+          <Form>
+            <h2>Add Names/Numbers</h2>
+            <p>Numbers must be from 1 to {MAX_RAND_NUM} inclusive.</p>
+            {/*
+            Maximum range feature is being considered.
             <Form.Group>
               <Form.Label>Maximum Number: {maxNum}</Form.Label>
               <Form.Range
-                min={1}
-                max={100}
+                // Minimum must not be lower than the greatest picked number
+                min={Math.max(...picks.map(p => p.number))}
+                max={MAX_RAND_NUM}
                 step={1}
                 value={maxNum}
                 onChange={(event) => setMaxNum(event.target.value)}
               />
             </Form.Group>
+            */}
             <fieldset>
               <h3 className="h6">Add Names/Numbers</h3>
               {/* Inputs for adding picks to the list */}
-              <InputGroup className="mb-3">
+              <InputGroup className="mb-3" onKeyDown={handleAddPickKeyDown}>
                 <FormControl
                   name="name"
                   aria-label="name"
@@ -89,7 +112,7 @@ function App() {
                   aria-label="number"
                   type="number"
                   min={1}
-                  max={maxNum}
+                  max={MAX_RAND_NUM}
                   aria-describedby="add-pick"
                   placeholder="Pick a number"
                   value={newPick.number}
@@ -100,7 +123,7 @@ function App() {
                   type="button"
                   variant="outline-primary"
                   id="add-pick"
-                  onClick={handleAddPick}
+                  onClick={addPick}
                   disabled={isInputInvalid}
                 >
                   Add
@@ -142,29 +165,44 @@ function App() {
                 </ListGroup>
               )}
             </fieldset>
-            <Button type="submit" variant="primary" className="w-100 mt-3">
-              GO!
-            </Button>
-          </form>
+            <Row>
+              <Col>
+                <Button type="submit" variant="primary" className="w-100 mt-3">
+                  Go
+                </Button>
+              </Col>
+              <Col>
+                <Button
+                  type="reset"
+                  variant="outline-secondary"
+                  className="w-100 mt-3"
+                >
+                  Reset
+                </Button>
+              </Col>
+            </Row>
+          </Form>
         </div>
         <div className="col-md-4 pt-5">
           <aside>
             <h2>Instructions</h2>
             <p>
-              This tool will pick and random number from 1 to the chosen
-              maximum. Then, the closes matching pick will be highlighted.
+              This tool will pick a random number from 1 to the {MAX_RAND_NUM}.
+              Then, the closest matching pick will be highlighted providing you
+              with a quick randomized decision.
             </p>
             <ol>
-              <li>Choose maximum number.</li>
               <li>
-                Enter names and picked numbers within the range inclusive. (You
-                can pick 1 or the maximum.)
+                Add two or more names and their number picks from 1 to{" "}
+                {MAX_RAND_NUM}.
               </li>
               <li>
-                Click "Decide" to choose a random number and highlight the
-                winner.
+                Click "Go" to choose a random number and highlight the winner.
               </li>
               <li>Click "Reset" to clear selections and start again.</li>
+              <li>
+                Click the "X" next to a name in the list to remove a pick.
+              </li>
             </ol>
           </aside>
         </div>

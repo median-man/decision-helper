@@ -11,8 +11,6 @@ import ListGroup from "react-bootstrap/ListGroup";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
-// - TODO: Form submit picks random number and displays it
-// - TODO: Form submit highlights closest matching pick
 // - TODO: reset clears picks
 // - TODO: clicking go again resubmits form
 // - TODO: press ctrl + enter anywhere on doc submits form
@@ -29,7 +27,13 @@ import Col from "react-bootstrap/Col";
 const MAX_RAND_NUM = 1000;
 
 function App() {
-  const [picks, setPicks] = useState([]);
+  const [randNum, setRandNum] = useState();
+  const [picks, setPicks] = useState([
+    // TODO: Remove these values. Temp for debugging.
+    { name: "Larry", number: 22 },
+    { name: "Curly", number: 383 },
+    { name: "Mo", number: 100 },
+  ]);
   const [newPick, setNewPick] = useState({ name: "", number: "" });
   const pickNameInputRef = useRef();
 
@@ -83,17 +87,47 @@ function App() {
   const createRemovePickFn = (name) => () =>
     setPicks((prev) => prev.filter((p) => p.name !== name));
 
+  const handleFormSubmit = (event) => {
+    event.preventDefault();
+    const n = Math.floor(Math.random() * MAX_RAND_NUM) + 1;
+    setRandNum(n);
+  };
+
+  // Find the distance from randNum of the closest picked number. Used to
+  // highlight the closest pick to the randomly selected number.
+  let minDistance = MAX_RAND_NUM + 1;
+  if (randNum) {
+    picks.forEach(({ number }) => {
+      const dist = Math.abs(randNum - number);
+      if (dist < minDistance) {
+        minDistance = dist;
+      }
+    });
+  }
+
   return (
     <Container>
       <header className="px-4 pt-5 text-center">
         <h1 className="display-5 fw-bold">Random Number Decider</h1>
       </header>
       <Row>
-        <Col md={8} className="pt-5">
+        <Col lg={8} className="pt-5">
           {/* Decider Inputs */}
-          <Form>
-            <h2>Add Names/Numbers</h2>
-            <p>Numbers must be from 1 to {MAX_RAND_NUM} inclusive.</p>
+          <Form onSubmit={handleFormSubmit}>
+            <h2 className="d-relative">
+              {randNum ? (
+                <>
+                  The number is{" "}
+                  <span className="fw-bold text-primary">{randNum}</span>
+                </>
+              ) : (
+                "Add Names/Numbers"
+              )}
+            </h2>
+            <p className={randNum ? "invisible" : ""}>
+              Numbers must be from 1 to {MAX_RAND_NUM} inclusive.
+            </p>
+
             {/*
             Maximum range feature is being considered.
             <Form.Group>
@@ -109,75 +143,91 @@ function App() {
             </Form.Group>
             */}
             <fieldset>
-              <h3 className="h6">Add Names/Numbers</h3>
-              {/* Inputs for adding picks to the list */}
-              <InputGroup className="mb-3" onKeyDown={handleAddPickKeyDown}>
-                <FormControl
-                  ref={pickNameInputRef}
-                  name="name"
-                  aria-label="name"
-                  aria-describedby="add-pick"
-                  placeholder="Enter a name"
-                  value={newPick.name}
-                  onChange={handleNewPickChange}
-                />
-                <FormControl
-                  name="number"
-                  aria-label="number"
-                  type="number"
-                  min={1}
-                  max={MAX_RAND_NUM}
-                  aria-describedby="add-pick"
-                  placeholder="Pick a number"
-                  value={newPick.number}
-                  onChange={handleNewPickChange}
-                />
-                {/* This button adds a new pick to the list */}
-                <Button
-                  type="button"
-                  variant="outline-primary"
-                  id="add-pick"
-                  onClick={addPick}
-                  disabled={isInputInvalid}
-                >
-                  Add
-                </Button>
-              </InputGroup>
-              {picks.length === 0 ? (
-                <p>Add some names/numbers using the input boxes above.</p>
-              ) : (
-                <ListGroup className="w-auto">
-                  {picks.map(({ name, number }) => (
-                    <ListGroup.Item
-                      key={name}
-                      className="d-flex justify-content-between"
+              {false || (
+                <>
+                  <h3 className="h6">Add Names/Numbers</h3>
+                  {/* Inputs for adding picks to the list */}
+                  <InputGroup onKeyDown={handleAddPickKeyDown}>
+                    <FormControl
+                      ref={pickNameInputRef}
+                      name="name"
+                      aria-label="name"
+                      aria-describedby="add-pick"
+                      placeholder="Enter a name"
+                      value={newPick.name}
+                      onChange={handleNewPickChange}
+                    />
+                    <FormControl
+                      name="number"
+                      aria-label="number"
+                      type="number"
+                      min={1}
+                      max={MAX_RAND_NUM}
+                      aria-describedby="add-pick"
+                      placeholder="Pick a number"
+                      value={newPick.number}
+                      onChange={handleNewPickChange}
+                    />
+                    {/* This button adds a new pick to the list */}
+                    <Button
+                      type="button"
+                      variant="outline-primary"
+                      id="add-pick"
+                      onClick={addPick}
+                      disabled={isInputInvalid}
                     >
-                      <div>
-                        <Badge
-                          bg="secondary"
-                          style={{ width: "3.2em" }}
-                          className="me-2"
-                        >
-                          {number}
-                        </Badge>{" "}
-                        {name}
-                      </div>
-                      {/* 
+                      Add
+                    </Button>
+                  </InputGroup>
+                </>
+              )}
+              {picks.length === 0 ? (
+                <p className="mt-3">
+                  Add some names/numbers using the input boxes above.
+                </p>
+              ) : (
+                <ListGroup className="w-auto mt-3">
+                  {picks.map(({ name, number }) => {
+                    const isClosest =
+                      Math.abs(randNum - number) === minDistance;
+                    return (
+                      <ListGroup.Item
+                        key={name}
+                        className={`d-flex justify-content-between ${
+                          isClosest ? "fw-bold" : ""
+                        }`}
+                        active={isClosest}
+                      >
+                        <div>
+                          <Badge
+                            bg={isClosest ? "light" : "secondary"}
+                            text={isClosest ? "dark" : "white"}
+                            style={{ width: "3.2em" }}
+                            className="me-2"
+                          >
+                            {number}
+                          </Badge>{" "}
+                          {name}
+                        </div>
+                        {/* 
                         react-bootstrap CloseButton seems to be bugged. Using vanilla BS instead.
                         Would like to make it red, but this uses and URL encoded image so color
                         styles won't do the job.
                         
                         TODO: edit svg to red.
                       */}
-                      <button
-                        type="button"
-                        className="btn-close"
-                        aria-label={`remove ${name}`}
-                        // Remove this pick
-                        onClick={createRemovePickFn(name)}
-                      ></button>
-                    </ListGroup.Item>
-                  ))}
+                        <button
+                          type="button"
+                          className={`btn-close ${
+                            isClosest ? "btn-close-white" : ""
+                          }`}
+                          aria-label={`remove ${name}`}
+                          // Remove this pick
+                          onClick={createRemovePickFn(name)}
+                        ></button>
+                      </ListGroup.Item>
+                    );
+                  })}
                 </ListGroup>
               )}
             </fieldset>
@@ -204,13 +254,13 @@ function App() {
             </Row>
           </Form>
         </Col>
-        <Col md={4} className="pt-5">
+        <Col lg={4} className="pt-5">
           <aside>
             <h2>Instructions</h2>
             <p>
-              This tool will pick a random number from 1 to the {MAX_RAND_NUM}.
-              Then, the closest matching pick will be highlighted providing you
-              with a quick randomized decision.
+              A random number from 1 to the {MAX_RAND_NUM} will be picked by
+              clicking on "Go". Then, the closest matching pick will be
+              highlighted providing you with a quick randomized decision.
             </p>
             <ol>
               <li>

@@ -11,8 +11,6 @@ import ListGroup from "react-bootstrap/ListGroup";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
-
-// - TODO: clicking X removes pick
 // - TODO: Form submit picks random number and displays it
 // - TODO: Form submit highlights closest matching pick
 // - TODO: reset clears picks
@@ -82,6 +80,9 @@ function App() {
     addPick();
   };
 
+  const createRemovePickFn = (name) => () =>
+    setPicks((prev) => prev.filter((p) => p.name !== name));
+
   return (
     <Container>
       <header className="px-4 pt-5 text-center">
@@ -143,7 +144,7 @@ function App() {
                 </Button>
               </InputGroup>
               {picks.length === 0 ? (
-                <p>You must add at least 2 picks.</p>
+                <p>Add some names/numbers using the input boxes above.</p>
               ) : (
                 <ListGroup className="w-auto">
                   {picks.map(({ name, number }) => (
@@ -172,6 +173,8 @@ function App() {
                         type="button"
                         className="btn-close"
                         aria-label={`remove ${name}`}
+                        // Remove this pick
+                        onClick={createRemovePickFn(name)}
                       ></button>
                     </ListGroup.Item>
                   ))}
@@ -180,7 +183,12 @@ function App() {
             </fieldset>
             <Row>
               <Col>
-                <Button type="submit" variant="primary" className="w-100 mt-3">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-100 mt-3"
+                  disabled={picks.length < 2}
+                >
                   Go
                 </Button>
               </Col>

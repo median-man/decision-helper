@@ -12,10 +12,20 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
 
-// - TODO: implement Row, Col, Container components
+// - TODO: clicking X removes pick
+// - TODO: Form submit picks random number and displays it
+// - TODO: Form submit highlights closest matching pick
+// - TODO: reset clears picks
+// - TODO: clicking go again resubmits form
 // - TODO: press ctrl + enter anywhere on doc submits form
 // - IDEA: show tooltip or overlay next to number pick input if user tries
 //   typing a number out of range
+// - IDEA: show an animation while random number is picked
+// - IDEA: use and animation/transition to highlight the winner
+// - IDEA: save names/picks for later with query params
+// - IDEA: dark theme toggle
+// - IDEA: multiple themes available
+// - IDEA: choose random theme button
 
 // Largest allowable number
 const MAX_RAND_NUM = 1000;
@@ -77,8 +87,8 @@ function App() {
       <header className="px-4 pt-5 text-center">
         <h1 className="display-5 fw-bold">Random Number Decider</h1>
       </header>
-      <div className="row">
-        <div className="col-md-8 pt-5">
+      <Row>
+        <Col md={8} className="pt-5">
           {/* Decider Inputs */}
           <Form>
             <h2>Add Names/Numbers</h2>
@@ -185,8 +195,8 @@ function App() {
               </Col>
             </Row>
           </Form>
-        </div>
-        <div className="col-md-4 pt-5">
+        </Col>
+        <Col md={4} className="pt-5">
           <aside>
             <h2>Instructions</h2>
             <p>
@@ -208,8 +218,8 @@ function App() {
               </li>
             </ol>
           </aside>
-        </div>
-      </div>
+        </Col>
+      </Row>
     </Container>
   );
 }

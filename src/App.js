@@ -11,8 +11,7 @@ import ListGroup from "react-bootstrap/ListGroup";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
-// - TODO: reset clears picks
-// - TODO: clicking go again resubmits form
+// - TODO: fix bug where user can't empty number input
 // - TODO: press ctrl + enter anywhere on doc submits form
 // - IDEA: show tooltip or overlay next to number pick input if user tries
 //   typing a number out of range
@@ -26,6 +25,9 @@ import Col from "react-bootstrap/Col";
 // Largest allowable number
 const MAX_RAND_NUM = 1000;
 
+// initial pick state
+const INIT_PICK = () => ({ name: "", number: "" });
+
 function App() {
   const [randNum, setRandNum] = useState();
   const [picks, setPicks] = useState([
@@ -34,7 +36,7 @@ function App() {
     { name: "Curly", number: 383 },
     { name: "Mo", number: 100 },
   ]);
-  const [newPick, setNewPick] = useState({ name: "", number: "" });
+  const [newPick, setNewPick] = useState(INIT_PICK);
   const pickNameInputRef = useRef();
 
   const handleNewPickChange = (event) => {
@@ -70,20 +72,38 @@ function App() {
     pickNameInputRef.current.focus();
   };
 
-  const handleAddPickKeyDown = (event) => {
-    // Do nothing if key is not Enter
-    if (event.code !== "Enter") {
-      return;
-    }
-
-    // Prevent bubbling and submit event on form
-    event.preventDefault();
-    event.stopPropagation();
-
-    // Add pick to list
-    addPick();
+  const resetForm = () => {
+    setNewPick(INIT_PICK);
+    setPicks([]);
   };
 
+  // Keyboard events for entire form
+  const handleFormKeyDown = (event) => {
+    // Reset the form if shift + enter is pressed
+    if (event.code === "Enter" && event.shiftKey) {
+      event.stopPropagation();
+      event.preventDefault();
+      resetForm();
+      return;
+    }
+  };
+
+  // Keyboard events for pick inputs
+  const handleAddPickKeyDown = (event) => {
+    // If shiftKey is pressed, bubble so that it can propagate to the handler
+    // for the Form element.
+    if (event.code === "Enter" && !event.shiftKey) {
+      // Prevent bubbling and submit event on form
+      event.preventDefault();
+      event.stopPropagation();
+
+      // Add pick to list
+      addPick();
+    }
+  };
+
+  // Returns a function which will update the state of picks by removing the
+  // pick with a name property that matches the  name parameter.
   const createRemovePickFn = (name) => () =>
     setPicks((prev) => prev.filter((p) => p.name !== name));
 
@@ -113,7 +133,7 @@ function App() {
       <Row>
         <Col lg={8} className="pt-5">
           {/* Decider Inputs */}
-          <Form onSubmit={handleFormSubmit}>
+          <Form onSubmit={handleFormSubmit} onKeyDown={handleFormKeyDown}>
             <h2 className="d-relative">
               {randNum ? (
                 <>
@@ -247,6 +267,7 @@ function App() {
                   type="reset"
                   variant="outline-secondary"
                   className="w-100 mt-3"
+                  onClick={resetForm}
                 >
                   Reset
                 </Button>

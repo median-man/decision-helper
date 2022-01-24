@@ -11,7 +11,6 @@ import ListGroup from "react-bootstrap/ListGroup";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
-// - TODO: fix bug where user can't empty number input
 // - TODO: press ctrl + enter anywhere on doc submits form
 // - IDEA: show tooltip or overlay next to number pick input if user tries
 //   typing a number out of range
@@ -30,21 +29,19 @@ const INIT_PICK = () => ({ name: "", number: "" });
 
 function App() {
   const [randNum, setRandNum] = useState();
-  const [picks, setPicks] = useState([
-    // TODO: Remove these values. Temp for debugging.
-    { name: "Larry", number: 22 },
-    { name: "Curly", number: 383 },
-    { name: "Mo", number: 100 },
-  ]);
+  const [picks, setPicks] = useState([]);
   const [newPick, setNewPick] = useState(INIT_PICK);
   const pickNameInputRef = useRef();
 
   const handleNewPickChange = (event) => {
     const { name, value } = event.target;
-    if ((name === "number" && value < 1) || value > MAX_RAND_NUM) {
-      return;
+    // Value of number can be blank ("") or a value from 1 to the maximum
+    if (
+      name === "number" &&
+      (value === "" || (value >= 1 && value <= MAX_RAND_NUM))
+    ) {
+      setNewPick((prev) => ({ ...prev, [name]: value }));
     }
-    setNewPick((prev) => ({ ...prev, [name]: value }));
   };
 
   const isInputInvalid =

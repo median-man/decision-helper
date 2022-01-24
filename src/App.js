@@ -11,7 +11,11 @@ import ListGroup from "react-bootstrap/ListGroup";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
+// - TODO: update the title of the app in index.html
 // - TODO: press ctrl + enter anywhere on doc submits form
+// - TODO: deploy after implementing items above
+// - TODO: add screenshot to the readme
+// - IDEA: persist picks in local storage
 // - IDEA: show tooltip or overlay next to number pick input if user tries
 //   typing a number out of range
 // - IDEA: show an animation while random number is picked
@@ -38,10 +42,12 @@ function App() {
     // Value of number can be blank ("") or a value from 1 to the maximum
     if (
       name === "number" &&
-      (value === "" || (value >= 1 && value <= MAX_RAND_NUM))
+      value !== "" &&
+      (value < 1 || value > MAX_RAND_NUM)
     ) {
-      setNewPick((prev) => ({ ...prev, [name]: value }));
+      return;
     }
+    setNewPick((prev) => ({ ...prev, [name]: value }));
   };
 
   const isInputInvalid =

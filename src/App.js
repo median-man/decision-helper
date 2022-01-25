@@ -11,7 +11,6 @@ import ListGroup from "react-bootstrap/ListGroup";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
-// - TODO: update the title of the app in index.html
 // - TODO: press ctrl + enter anywhere on doc submits form
 // - TODO: deploy after implementing items above
 // - TODO: add screenshot to the readme

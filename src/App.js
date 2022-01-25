@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 
 // UI Components
 import Badge from "react-bootstrap/Badge";
@@ -11,7 +11,7 @@ import ListGroup from "react-bootstrap/ListGroup";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
-// - TODO: press ctrl + enter anywhere on doc submits form
+// - TODO: reset random number when reset clicked or keypress
 // - TODO: deploy after implementing items above
 // - TODO: add screenshot to the readme
 // - IDEA: persist picks in local storage
@@ -32,7 +32,11 @@ const INIT_PICK = () => ({ name: "", number: "" });
 
 function App() {
   const [randNum, setRandNum] = useState();
-  const [picks, setPicks] = useState([]);
+  const [picks, setPicks] = useState([
+    { name: "one", number: 324 },
+    { name: "two", number: 555 },
+    { name: "three", number: 845 },
+  ]);
   const [newPick, setNewPick] = useState(INIT_PICK);
   const pickNameInputRef = useRef();
 
@@ -79,6 +83,27 @@ function App() {
     setPicks([]);
   };
 
+  const pickRandom = useCallback(() => {
+    if (picks.length > 2) {
+      const n = Math.floor(Math.random() * MAX_RAND_NUM) + 1;
+      setRandNum(n);
+    }
+  }, [picks])
+
+  // Keyboard events for entire document
+  useEffect(() => {
+    const handleDocKeyDown = (event) => {
+      // Pressing ctrl+Enter submits form no matter what has focus
+      if (event.code === "Enter" && event.ctrlKey) {
+        pickRandom();
+      }
+    };
+    document.addEventListener("keydown", handleDocKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleDocKeyDown);
+    };
+  }, [pickRandom]);
+
   // Keyboard events for entire form
   const handleFormKeyDown = (event) => {
     // Reset the form if shift + enter is pressed
@@ -94,7 +119,7 @@ function App() {
   const handleAddPickKeyDown = (event) => {
     // If shiftKey is pressed, bubble so that it can propagate to the handler
     // for the Form element.
-    if (event.code === "Enter" && !event.shiftKey) {
+    if (event.code === "Enter" && !event.shiftKey && !event.ctrlKey) {
       // Prevent bubbling and submit event on form
       event.preventDefault();
       event.stopPropagation();
@@ -111,8 +136,7 @@ function App() {
 
   const handleFormSubmit = (event) => {
     event.preventDefault();
-    const n = Math.floor(Math.random() * MAX_RAND_NUM) + 1;
-    setRandNum(n);
+    pickRandom();
   };
 
   // Find the distance from randNum of the closest picked number. Used to

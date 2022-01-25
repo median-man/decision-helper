@@ -11,7 +11,6 @@ import ListGroup from "react-bootstrap/ListGroup";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
-// - TODO: reset random number when reset clicked or keypress
 // - TODO: deploy after implementing items above
 // - TODO: add screenshot to the readme
 // - IDEA: persist picks in local storage
@@ -33,9 +32,10 @@ const INIT_PICK = () => ({ name: "", number: "" });
 function App() {
   const [randNum, setRandNum] = useState();
   const [picks, setPicks] = useState([
-    { name: "one", number: 324 },
-    { name: "two", number: 555 },
-    { name: "three", number: 845 },
+    // Values for testing
+    // { name: "one", number: 324 },
+    // { name: "two", number: 555 },
+    // { name: "three", number: 845 },
   ]);
   const [newPick, setNewPick] = useState(INIT_PICK);
   const pickNameInputRef = useRef();
@@ -81,6 +81,7 @@ function App() {
   const resetForm = () => {
     setNewPick(INIT_PICK);
     setPicks([]);
+    setRandNum();
   };
 
   const pickRandom = useCallback(() => {

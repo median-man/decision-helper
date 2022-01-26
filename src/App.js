@@ -13,7 +13,6 @@ import Col from "react-bootstrap/Col";
 
 // - TODO: deploy after implementing items above
 // - TODO: add screenshot to the readme
-// - IDEA: persist picks in local storage
 // - IDEA: show tooltip or overlay next to number pick input if user tries
 //   typing a number out of range
 // - IDEA: show an animation while random number is picked
@@ -26,19 +25,30 @@ import Col from "react-bootstrap/Col";
 // Largest allowable number
 const MAX_RAND_NUM = 1000;
 
+// Storage key for persisting list of picks
+const SK_PICKS = "picks";
+
 // initial pick state
 const INIT_PICK = () => ({ name: "", number: "" });
 
+const initialPicks = () => {
+  let picks = localStorage.getItem(SK_PICKS);
+  if (picks) {
+    return JSON.parse(picks);
+  }
+  return [];
+};
+
 function App() {
   const [randNum, setRandNum] = useState();
-  const [picks, setPicks] = useState([
-    // Values for testing
-    // { name: "one", number: 324 },
-    // { name: "two", number: 555 },
-    // { name: "three", number: 845 },
-  ]);
+  const [picks, setPicks] = useState(initialPicks);
   const [newPick, setNewPick] = useState(INIT_PICK);
   const pickNameInputRef = useRef();
+
+  // sync local storage with picks
+  useEffect(() => {
+    localStorage.setItem(SK_PICKS, JSON.stringify(picks));
+  }, [picks]);
 
   const handleNewPickChange = (event) => {
     const { name, value } = event.target;
@@ -89,7 +99,7 @@ function App() {
       const n = Math.floor(Math.random() * MAX_RAND_NUM) + 1;
       setRandNum(n);
     }
-  }, [picks])
+  }, [picks]);
 
   // Keyboard events for entire document
   useEffect(() => {
